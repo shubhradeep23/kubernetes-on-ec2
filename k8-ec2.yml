@@ -1,0 +1,50 @@
+ami-03f0fd1a2ba530e75
+K8-CUSTOM-AMI: ami-093e2f79c6e6d9e9d
+---
+-
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - /root/ansible/vars/k8ec2-vars.yml
+  
+  tasks:
+    - name: Provision a set of instances
+      ec2:
+         key_name: "{{ key_name }}"
+         group: "{{ group }}"
+         instance_type: "{{ instance_type }}"
+         image: "{{ image }}"
+         region: "{{ region }}"
+         wait: true
+         exact_count: 1
+         count_tag:
+            Name: k8-master
+         instance_tags:
+            Name: k8-master
+      register: ec2
+      ignore_errors: true
+    
+    - name: Refresh inventory to ensure new instances exist in inventory	
+      meta: refresh_inventory
+    
+    - name: Provision a set of instances
+      ec2:
+         key_name: "{{ key_name }}"
+         group: "{{ group }}"
+         instance_type: "{{ instance_type }}"
+         image: "{{ image }}"
+         region: "{{ region }}"
+         wait: true
+         exact_count: 1
+         count_tag:
+            Name: k8-worker
+         instance_tags:
+            Name: k8-worker
+      register: ec2
+      ignore_errors: true
+   
+    - name: Refresh inventory to ensure new instances exist in inventory
+      meta: refresh_inventory
+...
+
